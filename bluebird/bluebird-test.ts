@@ -1,4 +1,5 @@
 /// <reference path="bluebird.d.ts" />
+import Promise = require('bluebird');
 
 var obj:Object;
 var bool:boolean;
@@ -15,18 +16,15 @@ var numArr:string[];
 var value:any = null;
 var reason:any = null;
 
-var Promise:Bluebird.PromiseStatic;
 
-var promise:Bluebird.Promise;
-var p:Bluebird.Promise;
+var p:Promise;
 
-var resolver:Bluebird.PromiseResolver;
-var inspection:Bluebird.PromiseInspection;
-var arrLike:Bluebird.ArrayLike;
+var resolver:Promise.PromiseResolver<any>;
+var inspection:Promise.PromiseInspection<any>;
 
 // - - - - - - - - - - - - - - - - - - - - - - - -
 
-var promise = new Promise((resolve:(value:any) => void, reject:(reason:any) => void) => {
+var promise = new Promise<number>((resolve:(value:any) => void, reject:(reason:any) => void) => {
     if(true) {
         resolve(123);
     }
@@ -37,7 +35,6 @@ var promise = new Promise((resolve:(value:any) => void, reject:(reason:any) => v
 
 // - - - - - - - - - - - - - - - - - - - - - - - -
 
-num = arrLike.length;
 
 // - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -52,6 +49,7 @@ resolver.callback = () => {
 };
 
 // - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 bool = inspection.isFulfilled();
 
@@ -117,21 +115,21 @@ p = promise.lastly((value:any) => {
 
 });
 
-p = promise.bind(x);
+//p = promise.bind(x);
 
-p = promise.done((value:any) => {
+promise.done((value:any) => {
 
 }, (reason:any) => {
 
 }, (note:any) => {
 
 });
-p = promise.done((value:any) => {
+promise.done((value:any) => {
 
 }, (reason:any) => {
 
 });
-p = promise.done((value:any) => {
+promise.done((value:any) => {
 
 });
 
@@ -144,7 +142,7 @@ p = promise.delay(x);
 p = promise.timeout(x);
 p = promise.timeout(x, str);
 
-p = promise.nodeify();
+//p = promise.nodeify();
 p = promise.nodeify(function(err:any) {
 
 });
@@ -173,13 +171,11 @@ p = promise.uncancellable();
 
 bool = promise.isCancellable();
 
-bool = promise.isFulfilled();
-
-bool = promise.isRejected();
-
-bool = promise.isPending();
-
-bool = promise.isResolved();
+// These dont actually exist in bluebird
+//bool = promise.isFulfilled();
+//bool = promise.isRejected();
+//bool = promise.isPending();
+//bool = promise.isResolved();
 
 inspection = promise.inspect();
 
@@ -191,7 +187,7 @@ p = promise.return(value);
 p = promise.thenReturn();
 
 p = promise.throw(x);
-p = promise.thenThrow();
+p = promise.thenThrow("Test");
 
 str = promise.toString();
 
@@ -222,6 +218,8 @@ p = promise.map((item:any, index:number, arrayLength:number) => {
     return x;
 });
 
+p = promise.map(x => x * x);
+
 p = promise.reduce((total:number, memo:any, index:number, arrayLength:number) => {
     return memo;
 });
@@ -247,15 +245,6 @@ p = new Promise((resolve:(value:any) => any, reject:(reason:any) => any) => {
 p = Promise.try(() => {});
 p = Promise.try(() => {}, arr);
 p = Promise.try(() => {}, arr, x);
-p = Promise.try(() => {}, arrLike);
-p = Promise.try(() => {}, arrLike, x);
-
-
-p = Promise.attempt(() => {});
-p = Promise.attempt(() => {}, arr);
-p = Promise.attempt(() => {}, arr, x);
-p = Promise.attempt(() => {}, arrLike);
-p = Promise.attempt(() => {}, arrLike, x);
 
 f = Promise.method(function() {
 
@@ -279,18 +268,14 @@ p = Promise.delay(p, x);
 p = Promise.delay(value, x);
 p = Promise.delay(x);
 
-f = Promise.promisify(f);
+f = Promise.promisify(function() {});
 f = Promise.promisify(f, x);
-
-obj = Promise.promisify(obj);
 
 obj = Promise.promisifyAll(obj);
 
 f = Promise.coroutine(f);
 
 p = Promise.spawn(f);
-
-obj = Promise.noConflict();
 
 Promise.onPossiblyUnhandledRejection((reason:any) => {
 

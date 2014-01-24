@@ -1,11 +1,10 @@
-// Type definitions for bluebird
+// Type definitions for bluebird 1.0.0
 // Project: https://github.com/petkaantonov/bluebird
 // Definitions by: Gorgi Kosev
 // Definitions: https://github.com/borisyankov/DefinitelyTyped  
 
 
 declare module "bluebird" {
-
 
 
     interface Promise<T> {
@@ -27,11 +26,24 @@ declare module "bluebird" {
         catch<U>(onRejected:(reason:any) => U): Promise<U>;
         catch<U>(onRejected:(reason:any) => Promise.IPromise<U>): Promise<U>;
 
+
+        // TODO: multiple filters/types
+        caught<U>(filter:(e:Error) => boolean, onRejected:(reason:Error) => U): Promise<U>;
+        caught<U>(filter:(e:Error) => boolean, onRejected:(reason:Error) => Promise.IPromise<U>): Promise<U>;
+
+        caught<U>(etype:new (any) => Error, onRejected:(reason:Error) => U): Promise<U>;
+        caught<U>(etype:new (any) => Error, onRejected:(reason:Error) => Promise.IPromise<U>): Promise<U>;
+
+        caught<U>(onRejected:(reason:any) => U): Promise<U>;
+        caught<U>(onRejected:(reason:any) => Promise.IPromise<U>): Promise<U>;
+
+
+
         error<U>(onRejected:(reason:Promise.RejectionError) => Promise.IPromise<U>): Promise<U>;
         error<U>(onRejected:(reason:Promise.RejectionError) => U): Promise<U>;
 
-        finally(finallyCallback:() => any): Promise<T>;
-        lastly(finallyCallback:() => any): Promise<T>;
+        finally(finallyCallback:Function): Promise<T>;
+        lastly(finallyCallback:Function): Promise<T>;
 
         //TypeScript can't model .bind very well.
         bind(object:any):Promise<T>
@@ -67,6 +79,7 @@ declare module "bluebird" {
         get<U>(propertyName:String): Promise<U>;
         return<U>(value:U): Promise<U>;
         thenReturn<U>(value:U): Promise<U>;
+        thenReturn(): Promise<void>;
         throw(reason:any): Promise<T>;
         thenThrow(reason:any): Promise<T>;
 
@@ -99,23 +112,19 @@ declare module "bluebird" {
 
         spread<U>(onFulfilled:Function, onRejected?:Function): Promise<U>;
 
-        map<U>(mapper:(item:T) => U):Promise<U[]>;
-        map<U>(mapper:(item:T) => Promise.IPromise<U>):Promise<U[]>;
+        map<U>(mapper:(item:T, index: number, length: number) => U):Promise<U[]>;
+        map<U>(mapper:(item:T, index: number, length: number) => Promise.IPromise<U>):Promise<U[]>;
 
-        reduce<U>(reducer:(accumulator:U, arg:T) => U, initial?:any):Promise<U>;
-        reduce<U>(reducer:(accumulator:U, arg:T) => Promise.IPromise<U>, initial?:any):Promise<U>;
+        reduce<U>(reducer:(accumulator:U, arg:T, index: number, length: number) => U, initial?:any):Promise<U>;
+        reduce<U>(reducer:(accumulator:U, arg:T, index: number, length: number) => Promise.IPromise<U>, initial?:any):Promise<U>;
 
-        filter<U>(predicate:(item:T) => boolean):Promise<U[]>;
+        filter<U>(predicate:(item:T, index: number, length: number) => boolean):Promise<U[]>;
         // todo: check if this works?
-        filter<U>(predicate:(item:T) => Promise.IPromise<boolean>):Promise<U[]>;
+        filter<U>(predicate:(item:T, index: number, length: number) => Promise.IPromise<boolean>):Promise<U[]>;
 
         valueOf(): any;
 
     }
-
-
-
-
 
     var Promise: {
         CancellationError : new (message:string) => Promise.CancellationError;
@@ -130,17 +139,16 @@ declare module "bluebird" {
         onPossiblyUnhandledRejection(handler:(reason:any, promise:Promise<any>) => void):void;
 
         // Promisification
-        promisify<U>(fn:(...args:any[]) => void, ctx?:any): Promise<U>;
+        promisify(fn:Function, ctx?:any): Function;
         //impossible to model without interfaces
-        promisifyAll<U>(object:any): U;
+        promisifyAll(object:any);
 
         bind<T>(object:any):Promise<T>;
 
         try<U>(f:() => U):Promise<U>;
         try<U, V>(f:(arg:V) => U, arg?:V):Promise<U>;
         try<U, V>(f:(arg:V) => U, args:any[], context:any):Promise<U>;
-
-
+        try<U, V>(f:(arg:V) => U, args:Promise.ArrayLike, context:any):Promise<U>;
 
         method<T>(method:(...args:any[]) => Promise.IPromise<T>):(...args:any[]) => Promise<T>;
         method<T>(method:(...args:any[]) => T):(...args:any[]) => Promise<T>;
@@ -189,24 +197,28 @@ declare module "bluebird" {
         join<U>(...promises:Promise.IPromise<U>[]):Promise<U[]>;
         join<U>(...promises:any[]):Promise<U[]>;
 
-        map<U, V>(promises:Promise.IPromise<U>[], fn:(value:U, index?:number, len?:number) => V):Promise<V[]>;
-        map<U, V>(promises:Promise.IPromise<U[]>, fn:(value:U, index?:number, len?:number) => V):Promise<V[]>;
-        map<U, V>(promises:Promise.IPromise<U>[], fn:(value:U, index?:number, len?:number) => Promise.IPromise<V>):Promise<V[]>;
-        map<U, V>(promises:Promise.IPromise<U[]>, fn:(value:U, index?:number, len?:number) => Promise.IPromise<V>):Promise<V[]>;
+        map<U, V>(promises:Promise.IPromise<U>[], fn:(value:U, index:number, length:number) => V):Promise<V[]>;
+        map<U, V>(promises:Promise.IPromise<U[]>, fn:(value:U, index:number, length:number) => V):Promise<V[]>;
+        map<U, V>(promises:Promise.IPromise<U>[], fn:(value:U, index:number, length:number) => Promise.IPromise<V>):Promise<V[]>;
+        map<U, V>(promises:Promise.IPromise<U[]>, fn:(value:U, index:number, length:number) => Promise.IPromise<V>):Promise<V[]>;
 
-        reduce<U, V>(promises:Promise.IPromise<U>[], reducer:(accumulator:V, arg:U) => V, initial?:any):Promise<V>;
-        reduce<U, V>(promises:Promise.IPromise<U>[], reducer:(accumulator:V, arg:U) => Promise.IPromise<V>, initial?:any):Promise<V>;
-        reduce<U, V>(promises:Promise.IPromise<U[]>, reducer:(accumulator:V, arg:U) => V, initial?:any):Promise<V>;
-        reduce<U, V>(promises:Promise.IPromise<U[]>, reducer:(accumulator:V, arg:U) => Promise.IPromise<V>, initial?:any):Promise<V>;
+        reduce<U, V>(promises:Promise.IPromise<U>[], reducer:(accumulator:V, arg:U, index:number, length:number) => V, initial?:any):Promise<V>;
+        reduce<U, V>(promises:Promise.IPromise<U>[], reducer:(accumulator:V, arg:U, index:number, length:number) => Promise.IPromise<V>, initial?:any):Promise<V>;
+        reduce<U, V>(promises:Promise.IPromise<U[]>, reducer:(accumulator:V, arg:U, index:number, length:number) => V, initial?:any):Promise<V>;
+        reduce<U, V>(promises:Promise.IPromise<U[]>, reducer:(accumulator:V, arg:U, index:number, length:number) => Promise.IPromise<V>, initial?:any):Promise<V>;
 
-        filter<U>(promises:Promise.IPromise<U>[], fn:(value:U, index?:number, len?:number) => boolean):Promise<U[]>;
-        filter<U>(promises:Promise.IPromise<U[]>, fn:(value:U, index?:number, len?:number) => boolean):Promise<U[]>;
-        filter<U>(promises:Promise.IPromise<U>[], fn:(value:U, index?:number, len?:number) => Promise.IPromise<boolean>):Promise<U[]>;
-        filter<U>(promises:Promise.IPromise<U[]>, fn:(value:U, index?:number, len?:number) => Promise.IPromise<boolean>):Promise<U[]>;
+        filter<U>(promises:Promise.IPromise<U>[], fn:(value:U, index:number, length:number) => boolean):Promise<U[]>;
+        filter<U>(promises:Promise.IPromise<U[]>, fn:(value:U, index:number, length:number) => boolean):Promise<U[]>;
+        filter<U>(promises:Promise.IPromise<U>[], fn:(value:U, index:number, length:number) => Promise.IPromise<boolean>):Promise<U[]>;
+        filter<U>(promises:Promise.IPromise<U[]>, fn:(value:U, index:number, length:number) => Promise.IPromise<boolean>):Promise<U[]>;
 
     }
 
     module Promise {
+        export interface ArrayLike {
+            length: number;
+        }
+
         export interface IPromise<T> {
             then<U>(onFulfill:(value:T) => Promise.IPromise<U>, onReject?:(reason:any) => Promise.IPromise<U>): Promise.IPromise<U>;
             then<U>(onFulfill:(value:T) => Promise.IPromise<U>, onReject?:(reason:any) => U): Promise.IPromise<U>;
@@ -233,6 +245,7 @@ declare module "bluebird" {
         export interface RejectionError extends Error {}
     }
 
-export = Promise;
+    export = Promise;
 
 }
+
